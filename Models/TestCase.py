@@ -20,11 +20,11 @@ class Testcaseresult(Base):
     case_name = Column(NCHAR(200), comment='用例名')
     case_number = Column(NCHAR(200), comment='用例编号')
     marker = Column(NCHAR(200), comment='用例模块(Marker)')
-    nodeid = Column(NCHAR(400), comment='用例节点')
+    Level = Column(NCHAR(400), comment='用例等级')
     imgurl = Column(NCHAR(400), comment='截图')
     taskname = Column(NCHAR(400), comment='任务名')
 
-engine = create_engine("oracle+cx_oracle://TESTCASE:zdww1402!@114.215.200.79:1521/test",
+engine = create_engine("oracle+cx_oracle://username:password@ip:port/instance_name",
                                     max_overflow = 5) #创建引擎
 
 
@@ -32,7 +32,7 @@ def init_db(): #初始化表
     Base.metadata.create_all(bind=engine)
 
 def getModel():
-    cmd = r"""sqlacodegen oracle+cx_oracle://TESTCASE:zdww1402\!@114.215.200.79:1521/test --outfile filename.py"""
+    cmd = r"""sqlacodegen oracle+cx_oracle://username:password@ip:port/instance_name --outfile filename.py"""
 
 
 def saveCase(instance):

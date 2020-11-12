@@ -1,31 +1,60 @@
 import pytest
 import os
+import sys
 
 from logFile import logger
 from config.globalVars import G
 from utils.Others.TimeOperation import datetime_strftime
 from Models.TestCase import Testcaseresult, saveCase
 
+"""
+总工程的conftest为pytest工程共享配置，每个测试函数均可调用，
+各个测试模块文件夹中定义的fixture仅仅该文件夹下的代码可以调用
+fixture可以实现各种初始化，后置处理
+
+"""
+
+
+def pytest_runtest_setup(item):
+    for mark in item.iter_markers(name="TestCase"):
+        print("TestCase args={} kwargs={}".format(mark.args, mark.kwargs))
+        sys.stdout.flush()
 
 @pytest.fixture(scope='session', autouse=False)
 def log():
+    """ log fixture 打印消息"""
     logs = logger.Logger("debug")
     yield logs
 
 
 @pytest.fixture(scope="function", autouse=True)
-def Init(request, log):
+def preInit(request, log):
+    """初始化fixture 返回log对象
+    fixture可以调用其他fixture
+
+    """
+    log.info("Start Setting UP " + "\r")
     os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
     filepath = request.node.nodeid
     G.now_case_startTime = datetime_strftime()
-    logger.cmdOUT("TestCase: %s Start, Using Fixtures: %s " % (filepath, str(request.fixturenames)))
-    logger.cmdOUT("UsingMarker: %s " % str(request.node.own_markers) + "\r")
-    logger.cmdOUT("Start Setting UP " + "\r")
+    log.info("TestCase: %s Start, Using Fixtures: %s " % (filepath, str(request.fixturenames)))
+    G.now_case_level = request.node.own_markers[0].args[0].split("]")[0][1]
+    G.now_case_name = request.node.own_markers[0].args[0].split("]")[1]
+    G.now_case_number = request.node.name
+    log.info("UsingMarker: %s CaseLevel: Level %s CaseName:%s" % (request.node.own_markers[0].name, G.now_case_level, G.now_case_name ) + "\r")
+
     yield log
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):
+    """"
+    pytest后置处理fixture，无需调用，用例结束自动调用
+
+    不能修改 该fixture负责生成日志，上传记录等。
+
+
+    """
     print('------------------------------------')
     out = yield
     report = out.get_result()
@@ -53,11 +82,11 @@ def pytest_runtest_makereport(item, call):
         if G.TASK_NAME != "Local":
             # TASK_NAME 为Local时不会上传测试记录，但会在本地留下日志信息
             now_case = Testcaseresult()
-            now_case.nodeid = str(report.nodeid)
-            now_case.case_number = str(report.head_line)
+            now_case.case_number = G.now_case_number
+            now_case.case_name = G.now_case_name
+            now_case.Level = G.now_case_level
             now_case.result = str(report.outcome)
             now_case.create_time = G.now_case_startTime
-            G.now_case_startTime = None
             now_case.create_worker = G.OPERATION_WORKER
             now_case.taskname = G.TASK_NAME
             now_case.ending_time = datetime_strftime()

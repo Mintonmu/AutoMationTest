@@ -143,7 +143,7 @@ class GlobalVars(object):
         browser = "firefox"
     # 根据后续自动安装驱动返回
     DRIVER_PATH = None
-    # 定位元素语法
+    # 定位元素语法,selenium提供By
     LOCATE_MODE = {
         'css': By.CSS_SELECTOR,
         'xpath': By.XPATH,
@@ -165,8 +165,98 @@ G = GlobalVars()
 
 年-月-日 时-分-秒，毫秒 - [日志来源文件:当前文件行号]-日志等级- 日志消息
 
+## 重写pytest_make_report后的日志样本
+
 ```log
-2020-11-03 15:55:57,673 - [test_baidu.py-_jb_pytest_runner:20]- INFO - 开始登录平台
+当前节点: TestCase/UI/test_baidu.py::test_loginPlatform 
+TestCaseName: test_loginPlatform   Result: failed   Duration: 21.019038025S 
+--------------------Captured stdout setup--------------------
+2020-11-11 16:39:44,951 - [browser.py-_jb_pytest_runner:27]- WARNING - 您的电脑为 mac 平台, 浏览器为 CHROME 版本号 86.0.4240.193 
+2020-11-11 16:39:45,674 - [browser.py-_jb_pytest_runner:46]- WARNING - 未查询到本地驱动
+开始下载!
+Archive:  chromedriver_mac64.zip
+  inflating: chromedriver            
+2020-11-11 16:39:48,641004 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:21]- INFO - TestCase: TestCase/UI/test_baidu.py::test_loginPlatform Start, Using Fixtures: ['drivers', 'log', 'Init', 'request'] 
+2020-11-11 16:39:48,641141 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:22]- INFO - UsingMarker: [Mark(name='z_user_org_right', args=(), kwargs={})] 
+
+2020-11-11 16:39:48,641184 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:23]- INFO - Start Setting UP 
+
+
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured log setup--------------------
+WARNING  _jb_pytest_runner:browser.py:27 您的电脑为 mac 平台, 浏览器为 CHROME 版本号 86.0.4240.193 
+WARNING  _jb_pytest_runner:browser.py:46 未查询到本地驱动
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured stdout call--------------------
+2020-11-11 16:39:48,642 - [test_baidu.py-_jb_pytest_runner:9]- INFO - 开始登录平台
+2020-11-11 16:39:48,642 - [LoginPlatform.py-_jb_pytest_runner:22]- INFO - 读取登录页元素定位配置
+2020-11-11 16:39:48,645 - [LoginPlatform.py-_jb_pytest_runner:24]- INFO - 开始打开页面
+2020-11-11 16:39:49,462 - [BasePage.py-_jb_pytest_runner:31]- INFO - 打开网页：http://ip:port/z_user_org_right/Login/index
+2020-11-11 16:39:49,462 - [LoginPlatform.py-_jb_pytest_runner:26]- INFO - 输入登录名
+2020-11-11 16:39:50,102 - [BasePage.py-_jb_pytest_runner:69]- INFO - 输入文本：
+2020-11-11 16:39:50,102 - [LoginPlatform.py-_jb_pytest_runner:28]- INFO - 输入密码
+2020-11-11 16:39:50,678 - [BasePage.py-_jb_pytest_runner:69]- INFO - 输入文本：
+2020-11-11 16:39:50,678 - [LoginPlatform.py-_jb_pytest_runner:30]- INFO - 点击登录跳转
+2020-11-11 16:39:51,717 - [BasePage.py-_jb_pytest_runner:75]- INFO - 点击元素：('name', 'btnLogin')
+
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured log call--------------------
+INFO     _jb_pytest_runner:test_baidu.py:9 开始登录平台
+INFO     _jb_pytest_runner:LoginPlatform.py:22 读取登录页元素定位配置
+INFO     _jb_pytest_runner:LoginPlatform.py:24 开始打开页面
+INFO     _jb_pytest_runner:BasePage.py:31 打开网页：http://114.215.200.79:82/z_user_org_right/Login/index
+INFO     _jb_pytest_runner:LoginPlatform.py:26 输入登录名
+INFO     _jb_pytest_runner:BasePage.py:69 输入文本：wangbf
+INFO     _jb_pytest_runner:LoginPlatform.py:28 输入密码
+INFO     _jb_pytest_runner:BasePage.py:69 输入文本：zjugis1402!
+INFO     _jb_pytest_runner:LoginPlatform.py:30 点击登录跳转
+INFO     _jb_pytest_runner:BasePage.py:75 点击元素：('name', 'btnLogin')
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+
 ```
 
 # logFile模块
@@ -189,6 +279,12 @@ log.critical()
 # Models模块
 
 数据库ORM文件存放地址,(根据使用数据库切换，当前使用ORACLE数据库演示)存放着平台当前所有表空间的数据库模型，使用SQLAlchemy完成。每个模块对应数据库模型文件名为模块名，例z_user_org_right对应z_user_org_right.py，需搭配后续utils/DBconnect/ORACLE.py使用,
+
+
+
+本项目因采用数据库为ORACLE，因此是oracle+cx_oracle，如果是采用Mysql 需要搭配pymysql
+
+生成的ORM Model也会因数据库不同而不同
 
 ```cmd
 sqlacodegen oracle+cx_oracle://username:password@IP:port/instancename --outfile filename.py 
@@ -603,13 +699,13 @@ def example_USER_fixture():
 """调用该fixture并请求"""
 
 @pytest.mark.TestCase("[1]测试API")
-def test_Login_Api_Get_Token_GET(example_USER_fixture,Init):
-    Init.info("这是测试一个用例")
-    Init.info("测试USER fixture")
+def test_Login_Api_Get_Token_GET(example_USER_fixture,preInit):
+    preInit.info("这是测试一个用例")
+    preInit.info("测试USER fixture")
     sss = example_USER_fixture.Login_Api_Get_Token_GET()
-    Init.info("本次测试状态码为 %s  " % sss[0])
-    Init.info("本次测试返回值为 %s  " % sss[1])
-    Init.info("本次测试响应头为 %s  " % sss[2])
+    preInit.info("本次测试状态码为 %s  " % sss[0])
+    preInit.info("本次测试返回值为 %s  " % sss[1])
+    preInit.info("本次测试响应头为 %s  " % sss[2])
 ```
 
 ##### RequestDataSource.py
@@ -852,6 +948,10 @@ class SFTPOperation(SSHBase):
 
 该模块为web项目，负责测试结果查询API，后续会部署至服务器，一般人员无需关心其构建，采用Django+Django RestFrameWork编写，后续会提供以下API，遵从Restful接口规范
 
+
+
+## API概览: 
+
 ```python
 urlpatterns = [
     url(r'^$', TestCaseAPI.as_view({"get": "list", "post": "create"})),
@@ -877,3 +977,234 @@ urlpatterns = [
 
 ```
 
+## 实现讲解
+
+![image-20201112222831042](/Users/wangbaofeng/Library/Application Support/typora-user-images/image-20201112222831042.png)
+
+关于Django和DRF此处不做解释，只讲解views.py,Model与Sqlalchemy生成的有一些区别，Django也支持根据已生成库生成ORM文件，具体百度一下即可。
+
+```python
+class TestCaseAPI(ModelViewSet):
+  
+  """
+  		序列化器以及Model很简单，不解释
+  		继承至DRF的ModelViewSet
+  		GET方式请求 返回所有测试用例执行详情的JSON
+  		GET方式请求 指定了ID ，返回该ID的JSon
+  		POST 新增
+  		DELETE 删除
+  		PATCH 更新
+  		
+  """
+    serializer_class = TestCaseSerializer
+    queryset = Testcaseresult.objects.all()
+
+
+class TestSystemMultipleAPI2(TestCaseAPI):
+  	
+  """继承至以上，因为感觉只能一次返回比较麻烦，因此重写了ModelViewSet
+  中的retreive方法以及get_object()方法，这个需要具体看源码才能知道为什么需要重写这里，解释起来很麻烦
+  DRF中 ModelViewSet继承了很多Mixin，感兴趣点进去看一下就大概了解
+  """
+    # 局部配置过滤器类
+    filter_backends = [DjangoFilterBackend]
+    # 参与分类筛选的字段：
+    filter_class = ResultFilter
+
+    def get_object(self):
+				
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Perform the lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+                'Expected view %s to be called with a URL keyword argument '
+                'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                'attribute on the view correctly.' %
+                (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = get_list_or_404(queryset, **filter_kwargs)
+
+        return obj
+
+    def retrieve(self, request, *args, **kwargs):
+        path = request.get_full_path()
+        from urllib import parse
+        path = parse.unquote(path.split("/")[-2])
+        # getresultByresult=passed
+        req_pa = path.split("By")[-1]
+        req_a = req_pa.split("=")[0]
+        if req_a in ["result", "marker", "create_worker", "taskname", 'case_number']:
+            self.lookup_url_kwarg = req_a
+            self.lookup_field = req_a
+        queryset = self.get_object()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class TestSystemVagueQuery(APIView):
+
+    def get(self, request):
+
+        vague_list = ["create_time", 'marker', "ending_time", 'nodeid']
+        now_case_filter = None
+        for i in vague_list:
+            request_param = request.query_params.get(i)
+            if request_param:
+                now_case_filter = {"%s__icontains" % i: request_param}
+
+        query_set = Testcaseresult.objects.filter(**now_case_filter)
+        if query_set:
+            seriliazer = TestCaseSerializer(query_set, many=True)
+            return Response(seriliazer.data)
+        else:
+            raise Http404('MMP')
+```
+
+
+
+# 项目工程中的conftest.py
+
+pytest框架允许多个conftest,运行时从工程最外层收集用例，并收取conftest,pytest.ini，因此一次启动会收集多个配置信息，fixture。这个正好可以满足全局配置放在最外层，局部的fixture配置等放置在里层。
+
+
+
+最外层conftest,定义了许多fixture
+
+```python
+def pytest_runtest_setup(item):
+    for mark in item.iter_markers(name="TestCase"):
+        print("TestCase args={} kwargs={}".format(mark.args, mark.kwargs))
+        sys.stdout.flush()
+"""使用pytest自定义marker"""
+"""该marker 为TestCase 接收一个字符串参数，本项目规定为[用例等级]用例编号"""
+```
+
+```python
+@pytest.fixture(scope="function", autouse=True)
+def preInit(request, log):
+    """初始化fixture 返回log对象
+    fixture可以调用其他fixture
+
+    """
+    log.info("Start Setting UP " + "\r")
+    os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
+    filepath = request.node.nodeid
+    G.now_case_startTime = datetime_strftime()
+    log.info("TestCase: %s Start, Using Fixtures: %s " % (filepath, str(request.fixturenames)))
+    G.now_case_level = request.node.own_markers[0].args[0].split("]")[0][1]
+    G.now_case_name = request.node.own_markers[0].args[0].split("]")[1]
+    G.now_case_number = request.node.name
+    log.info("UsingMarker: %s CaseLevel: Level %s CaseName:%s" % (request.node.own_markers[0].name, G.now_case_level, G.now_case_name ) + "\r")
+
+    yield log
+    
+    """preInit fixture，所有用例必须使用的fixture，其作用为根据TestCase marker获取 用例等级，名称，赋值给G变量，调整全局字体为UTF-8
+    这里的作用是配合后续重写pytest_make_report,在生成报告时可以得到一个很详细的测试详情，可以接着看下面
+    """
+```
+
+```python
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    """"
+    pytest后置处理fixture，无需调用，用例结束自动调用
+
+    不能修改 该fixture负责生成日志，上传记录等。
+
+
+    """
+    print('------------------------------------')
+    out = yield
+    report = out.get_result()
+    if report.when == 'call':
+        logpath = os.path.join(G.log_path, "%s_%s.log" % (datetime_strftime(), report.head_line))
+        logs = ''
+        with open(logpath, "a+") as  f:
+            f.write("当前节点: %s " % report.nodeid + "\r")
+            logs += "当前节点: %s " % report.nodeid + "\r"
+            f.write("TestCaseName: %s   Result: %s   Duration: %sS " % (
+                report.head_line, report.outcome, report.duration) + "\r")
+            logs += "TestCaseName: %s   Result: %s   Duration: %sS " % (
+                report.head_line, report.outcome, report.duration) + "\r"
+            for i in report.sections:
+                for j in i:
+                    if "Captured" in j:
+                        f.write("-" * 20 + j + "-" * 20 + "\r")
+                        logs += "-" * 20 + j + "-" * 20 + "\r"
+                    else:
+                        f.write(j + "\r")
+                        logs += j + "\r"
+                if report.longreprtext:
+                    f.write(report.longreprtext + "\r")
+                    logs += report.longreprtext + "\r"
+        if G.TASK_NAME != "Local":
+            # TASK_NAME 为Local时不会上传测试记录，但会在本地留下日志信息
+            now_case = Testcaseresult()
+            now_case.case_number = G.now_case_number
+            now_case.case_name = G.now_case_name
+            now_case.Level = G.now_case_level
+            now_case.result = str(report.outcome)
+            now_case.create_time = G.now_case_startTime
+            now_case.create_worker = G.OPERATION_WORKER
+            now_case.taskname = G.TASK_NAME
+            now_case.ending_time = datetime_strftime()
+            now_case.ending_worker = G.OPERATION_WORKER
+            now_case.marker = str(report.keywords)
+            now_case.imgurl = None if not G.now_case_img_url else G.now_case_img_url
+            now_case.logs = logs
+            saveCase(now_case)
+            
+ """Pytest在每次用例执行结束，无论失败均调用该fixture,重写它将后置处理调整为自己想要的，此处我调整为生成日志，/log/时间_用例名称.log, 并且如果在测试任务名不为Local时会保存本次测试数据至数据库
+ 
+ 在正式自动化测试中，测试信息结果等均需保留，本地调试时无需上传，TestCasereult()是我自己定义的Model，采用的是ORacle，也可以自定义使用Mysql 或者其他类型数据库，
+ """
+## /Models/TestCase.py  
+class Testcaseresult(Base):
+    __tablename__ = 'testcaseresult'
+    __table_args__ = {'comment': '测试数据管理'}
+
+    id = Column(Integer, primary_key=True, comment='主键')
+    create_worker = Column(VARCHAR(36), comment='创建人')
+    create_time = Column(VARCHAR(36), comment='创建时间')
+    ending_worker = Column(VARCHAR(36), comment='最后修改人')
+    ending_time = Column(VARCHAR(36), comment='最后修改时间')
+    logs = Column(CLOB(10000), comment='测试日志')
+    result = Column(NCHAR(200), comment='测试结果')
+    case_name = Column(NCHAR(200), comment='用例名')
+    case_number = Column(NCHAR(200), comment='用例编号')
+    marker = Column(NCHAR(200), comment='用例模块(Marker)')
+    Level = Column(NCHAR(400), comment='用例等级')
+    imgurl = Column(NCHAR(400), comment='截图')
+    taskname = Column(NCHAR(400), comment='任务名')
+    
+    """这就是一个比较详细的测试结果保存，之前考虑过通过pytest-html自动生成结果，但是效果不太满意，allure比较麻烦，因此我个人认为保存至数据库，再通过开发web项目是一个比较好的选择，因为可自定义程度大，毕竟可以集成其他功能，大型公司均采用这个模式
+    
+    """
+    
+   def saveCase(instance):
+    Session_class = sessionmaker(bind=engine)
+    Session = Session_class()
+    try:
+        Session.add(instance)
+    except Exception as e:
+        Session.rollback()
+    Session.commit()
+    Session.close_all()
+    
+"""SaveCase是保存方法，初始化ORM对象后可以采用sqlalchemy 提供的add方法，如果保存失败，需要rollback(),Sqlalchemy是一个十分好用的三方库，有兴趣的同学可以学习Flask，里边会用到flask-sqlalchemy,相比Django自带的orm会比较容易理解，能更深的理解python中的ORM"""
+
+
+```
+
+# Pytest.ini
+
+在项目根目录下的conftest.py类似，我仅在里边增加了一个marker,因为如果仅仅在conftest.py中注册TestCase Marker,日志中会有Warning提示

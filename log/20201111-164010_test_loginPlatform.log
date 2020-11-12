@@ -21,7 +21,7 @@ Init = <logFile.logger.Logger object at 0x10467d040>
         A = LoginPlatform(driver=drivers)
         A.login()
 >       assert drivers.title == "HH"
-E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+E       AssertionError: assert '一体化平台' == 'HH'
 
 test_baidu.py:12: AssertionError
 --------------------Captured log setup--------------------
@@ -36,7 +36,7 @@ Init = <logFile.logger.Logger object at 0x10467d040>
         A = LoginPlatform(driver=drivers)
         A.login()
 >       assert drivers.title == "HH"
-E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+E       AssertionError: assert '一体化平台' == 'HH'
 
 test_baidu.py:12: AssertionError
 --------------------Captured stdout call--------------------
@@ -60,14 +60,14 @@ Init = <logFile.logger.Logger object at 0x10467d040>
         A = LoginPlatform(driver=drivers)
         A.login()
 >       assert drivers.title == "HH"
-E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+E       AssertionError: assert '万一体化平台' == 'HH'
 
 test_baidu.py:12: AssertionError
 --------------------Captured log call--------------------
 INFO     _jb_pytest_runner:test_baidu.py:9 开始登录平台
 INFO     _jb_pytest_runner:LoginPlatform.py:22 读取登录页元素定位配置
 INFO     _jb_pytest_runner:LoginPlatform.py:24 开始打开页面
-INFO     _jb_pytest_runner:BasePage.py:31 打开网页：http://114.215.200.79:82/z_user_org_right/Login/index
+INFO     _jb_pytest_runner:BasePage.py:31 打开网页：http://ip:port/z_user_org_right/Login/index
 INFO     _jb_pytest_runner:LoginPlatform.py:26 输入登录名
 INFO     _jb_pytest_runner:BasePage.py:69 输入文本：wangbf
 INFO     _jb_pytest_runner:LoginPlatform.py:28 输入密码
@@ -83,6 +83,6 @@ Init = <logFile.logger.Logger object at 0x10467d040>
         A = LoginPlatform(driver=drivers)
         A.login()
 >       assert drivers.title == "HH"
-E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+E       AssertionError: assert '一体化平台' == 'HH'
 
 test_baidu.py:12: AssertionError

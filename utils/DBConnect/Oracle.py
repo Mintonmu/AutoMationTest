@@ -2,7 +2,7 @@ import sqlalchemy
 import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.testing import entities
 
 Base = declarative_base()
 
@@ -30,63 +30,8 @@ class DataBaseOperation(object):
             session_maker = sessionmaker(bind=self.db_engine)
             self.session = session_maker()
 
-    def query(self, table_name, filer=None, order=None):
-        """
-
-        :param table_name: 表名
-        :param filer: 过滤器
-        :param order: 排序
-        :return: 符合条件的数据实例
-        """
-        data = None
-        if filer:
-            if order:
-                data = self.session.query(table_name).filter_by(filer).order_by(order)
-            else:
-                data = self.session.query(table_name).filter_by(filer)
-        else:
-            if order:
-                data = self.session.query(table_name).order_by(order)
-            else:
-                data = self.session.query(table_name)
-
-        return data
-
-    def insert(self, instance):
-        """
-        :param instance:ORM实例，通过query查询得到
-        :return:
-        """
-        try:
-            self.session.add(instance)
-        except Exception as e :
-            # 如果插入失败，则回退
-            self.session.rollback()
-
-    def delete(self,instance):
-        """
-        :param instance: 删除的ORM实例，通过query查询得到
-        :return:
-        """
-        try:
-            self.session.delete(instance)
-        except Exception as e :
-            # 删除实例失败，oracle回退
-            self.session.rollback()
-
-    def update(self, instance):
-        """实例"""
-        if hasattr(instance, 'id'):
-            try:
-                self.query(table_name=instance.__class__, filer=instance.id).update(values=instance.__dict__)
-            except Exception as e:
-                self.session.rollback()
-
-    def __del__(self):
-        #自动commit
-        self.session.commit()
-        #实例销毁时关闭Oracle连接池
-        self.session.close()
-        self.db_engine.dispose()
+    """
+    原先使用的方法全部删除，改为使用session自带
+    """
 
 

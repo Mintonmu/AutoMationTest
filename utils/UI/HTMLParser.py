@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from config.globalVars import G
 import yaml
 from selenium import webdriver
-from WebPage.BasePage import WebPage
+from utils.UI.WebPage.BasePage import WebPage
 from utils.UI.read_element import Element
 
 class Parser(object):

@@ -1,6 +1,6 @@
 # 整体介绍
 
-项目基于Python开发，使用Pytest测试框架，因为unittest等其他框架三方插件比较少，开发复杂，因此采用pytest，具备许多第三方插件，且兼容unittest以及其他框架下开发的测试脚本。
+项目基于Python开发，使用Pytest测试框架，因此采用pytest，具备许多第三方插件，且兼容unittest以及其他框架下开发的测试脚本。
 
 Pytest在不指定测试内容时，会收集当前文件夹以及子文件夹下所有以test_开头的py文件中的test_开头或者test结尾的函数作为测试对象进行收集，默认情况下会运行收集到的所有用例。
 
@@ -12,286 +12,31 @@ Pytest在不指定测试内容时，会收集当前文件夹以及子文件夹�
 
 ​			3 测试用例函数为test_开头，后续为用例编号，设计用例时需指定好用例编号，不能含有中文以及特殊字符
 
-​			4 pytest测试函数可以直接调用fixture作为实参传入，目前本工程中已定义的有database, log等fixture，database为返回当前模块的数据库连接信息，log fixture会自动传入log handler，以及UI测试中日志失败插入截图等等
+​			4 测试函数可以直接调用fixture作为实参传入，目前本工程中已定义的有database, ,driver,HTTPRequest等fixture,以上fixture均				定义在/TestCase对应文件夹的conftest中			
 
-​			5 fixture是pytest中的很大一个优势，可以使用它完成许多工作，fixture都需要定义在conftest.py文件中，工程目录下的conftest为全局共享fixture，而测试目录下各个文件夹中conftest.py可自行创建并编写fixture，仅对该文件夹下的测试函数有效
+​			5 fixture是pytest中的很大一个优势，可以使用它完成许多工作，fixture都需要定义在conftest.py文件中，工程目录下的conftest				为全局共享fixture，而测试目录下各个文件夹中conftest.py可自行创建并编写fixture，仅对该文件夹下的测试函数有效
 
-​			6 每个测试用例需要加入marker装饰器，比如 这是用户模块的api测试，则需要在测试函数上添加@pytest.marker.z_user_org_right_api或者其他类型，方便区分的marker
+​			6 每个测试用例需要使用@pytest.mark.TestCase("[用例等级]用例名称")装饰器,方便后续开发批量测试入口
 
-​			7 启动入口目前定义的不太完善，通过工程目录下的run.py启动，启用方式为cmd中 python run.py --marker=z_user_org_right 则会自动测试所有marker为z_user_org_right的用例
-
-​			8 本地调试/开发推荐使用Jetbrain 的 Pycharm,需要在设置中操作以下步骤
-
-​			8.1   选择Tools 下 Python Integrated Tools 将 Default test runner修改为pytest![image-20201103194052504](/Users/wangbaofeng/Library/Application Support/typora-user-images/image-20201103194052504.png)
-
-​			8.2 修改启动模板
-
-​			![image-20201103194313631](/Users/wangbaofeng/Library/Application Support/typora-user-images/image-20201103194313631.png)
+​			7 本地调试/开发推荐使用Jetbrain 的 Pycharm,选择Tools 下 Python Integrated Tools 将 Default test runner修改为pytest![image-20201103194052504](/Users/wangbaofeng/Library/Application Support/typora-user-images/image-20201103194052504.png)
 
 
-
-配置好后，开发测试时只需在需要运行测试函数上右键即可测试该函数
 
 # 要求
 
-Python 版本为3.8.6, 使用VirtualENV虚拟环境运行，首次同步工程需要安装requirements.txt(cmd中pip install -r requirements.txt)
+开发时使用Python 版本为: MACOS_x64_3.8.6, 使用VirtualENV虚拟环境运行，首次同步工程需要安装requirements.txt(cmd中pip install -r requirements.txt)
 
-分辨率: 1920*1080
+分辨率: 暂无，如果测试UI需要 1920*1080 以上
 
-# Config 模块:
+# 模块简介:
+
+## Config 模块:
 
 主要为工程配置相关模块，存放工程所有配置信息
 
-## Browser.py
+### Browser.py
 
-负责UI自动化的浏览器驱动检测，如果已存在驱动则返回驱动地址供Selenium使用，如不存在驱动则会根据指定源地址下载当前平台的Chrome版本适配的驱动
-
-主体为Browser类，通过Browser实例的set_browser()方法完成驱动配置，会自动检测当前操作平台,位数(目前仅适配MAC以及Windows 的Chrome 以及 IE，firefox浏览器以及Linux不支持)
-
-该方法已经在TestCase/UI/conftest.py中定义了fixture，编写测试用例时仅需要传入browser参数
-
-#### browser实现代码
-
-```python
-import os
-import re
-import subprocess
-import zipfile
-
-import requests
-from bs4 import BeautifulSoup
-from config.globalVars import G
-from utils.Others.OSOperation import mk_dir
-from logFile.logger import Logger
-import selenium
-
-log = Logger()
-
-
-class Browser(object):
-
-    @classmethod
-    def set_browser(cls):
-        # 检查Chrome版本号
-        global version
-        if "mac" in G.platform:
-            # OS X
-            result = subprocess.Popen([r'{}/Google\ Chrome --version'.format(G.chrome_app)],
-                                      stdout=subprocess.PIPE, shell=True)
-            version = [x.decode("utf-8") for x in result.stdout][0].strip().split(" ")[-1]
-            log.warning("您的电脑为 %s 平台, 浏览器为 %s 版本号 %s " % (G.platform, G.browser, version))
-        elif "win" in G.platform and G.browser == "CHROME":
-            import winreg
-            try:
-                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, G.chrome_reg)
-                version = winreg.QueryValueEx(key, "version")[0]  # 查询注册表chrome版本号
-            except Exception:
-                raise Exception("查询注册表chrome版本失败!")
-            log.warning("您的电脑为 %s 平台, 浏览器为 %s 版本号 %s " % (G.platform, G.browser, version))
-
-        elif "win" in G.platform and G.browser == "IE":
-            log.warning("您的电脑为 %s 平台，浏览器为 %s  ,%s 是不被完整支持的浏览器 " % (G.platform, G.browser, G.browser))
-            version = selenium.__version__
-        G.browser_ver = version
-        file_vr = cls.search_ver(version)
-        if file_vr is None:
-            raise Exception("未获取到版本号! 请检查!")
-        status, file = cls.check_driver(file_vr)
-        if not status:
-            log.warning("未查询到本地驱动")
-            cls.gen_driver(file_vr)
-        else:
-            log.warning("系统已存在%sdriver, 无需下载!" % G.browser)
-            G.DRIVER_PATH = os.path.join(G.web_driver_path, file)
-
-
-
-
-
-
-    @classmethod
-    def check_driver(cls, version):
-        status, filename = False, None
-        if os.path.exists(G.web_driver_path):
-            pass
-        else:
-            mk_dir(G.web_driver_path)
-        for root, dirs, files in os.walk(G.web_driver_path):
-            for file in files:
-                if version not in file:
-                    try:
-                        os.remove(os.path.join(root, file))
-                    except Exception:
-                        continue
-                else:
-                    status, filename = True, file
-
-        return status, filename
-
-    @classmethod
-    def search_ver_v2(cls, version):
-        ver = ".".join(version.split(".")[:2])
-        r = requests.get(G.driver_url)
-        bs = BeautifulSoup(r.text, features='html.parser')
-        rt = [x for x in bs.select("pre a")]
-        if not rt:
-            raise Exception("可能淘宝镜像挂了，请重试")
-        for x in rt:
-            if x.text.startswith(ver):
-                return x.text.rstrip("/")
-        else:
-            raise Exception("没有找到当前版本的合适驱动: {}".format(version))
-
-    @classmethod
-    def search_ver(cls, version):
-        if version != "unknown":
-            file_vr = None
-            if G.browser == "CHROME":
-                number = version.split(".")[0]
-
-                url = G.driver_url + "LATEST_RELEASE"
-                r = requests.get(url)
-                bs = BeautifulSoup(r.text, 'html.parser')
-                latest = bs.text.strip()
-                record = "{}/{}/notes.txt".format(G.driver_url, latest)
-                info = requests.get(record)
-                text = info.text
-                vr = re.findall(r"-+ChromeDriver\s+v(\d+\.+\d+)[\s|.|-|]+", text)
-                br = re.findall(r"Supports\s+Chrome\s+v(\d+-\d+)", text)
-                if not br:
-                    return cls.search_ver_v2(version)
-                for v, b in zip(vr, br):
-                    small, bigger = b.split("-")
-                    if int(small) <= int(number) <= int(bigger):
-                        # 找到版本号
-                        log.info("找到浏览器对应驱动版本号: {}".format(v))
-                        file_vr = v
-                        break
-            elif G.browser == "IE" and G.platform =="windows":
-                global req_version
-                if version.endswith('0'):
-                    req_version = version[:-2]
-
-                url = G.ie_driver_url + req_version + "/"
-                r = requests.get(url)
-                bs = BeautifulSoup(r.text, 'lxml')
-                url_list = bs.find_all(['a'])
-                import platform
-                posix = platform.architecture()
-                log.warning("您的设备为%s%s" % posix)
-                vr = "Win32_%s" % version
-                v_l = []
-                for i in url_list:
-                    v_l.append(i.attrs['href'])
-                if vr in str(v_l):
-                    log.info("找到浏览器对应驱动版本号: {}".format(file_vr))
-                    file_vr = vr
-            return file_vr
-
-
-    @classmethod
-    def gen_driver(cls, file_vr):
-        if file_vr:
-            driver =None
-            file = None
-            r = None
-            if G.browser == "CHROME":
-                if G.platform == "mac":
-                    file = "chromedriver_mac64.zip".format(file_vr)
-                    driver = "chromedriver"
-                elif "win" in G.platform:
-                    file = "chromedriver_win32.zip".format(file_vr)
-                    driver = "chromedriver.exe"
-                else:
-                    file = "chromedriver_linux64.zip".format(file_vr)
-                    driver = "chromedriver"
-                r = requests.get("{}{}/{}".format(G.driver_url, file_vr, file))
-            elif G.browser == "IE":
-                file = "IEDriverServer_{}.zip".format(file_vr)
-                driver = "IEdriverServer.exe"
-                r = requests.get("{}{}/IEDriverServer_{}.zip".format(G.ie_driver_url, req_version, file_vr))
-
-            file_path = os.path.join(G.web_driver_path, file)
-            print("开始下载!")
-            with open(file_path, "wb") as f:
-                f.write(r.content)
-            cls.unzip_driver(file)
-            cls.change_driver_name(file_vr, driver)
-
-    @classmethod
-    def unzip_driver(cls, filename):
-        if G.platform == "mac":
-            # 解压zip
-            os.system('cd {};unzip {}'.format(G.web_driver_path, filename))
-            os.path.join(G.web_driver_path, filename)
-        elif "win" in G.platform:
-            cls.unzip_win(os.path.join(G.web_driver_path, filename))
-            os.remove(os.path.join(G.web_driver_path, filename))
-        else:
-            pass
-
-    @classmethod
-    def change_driver_name(cls, version, filename):
-        if G.platform == "mac":
-            new_file = "{}_{}".format(filename, version)
-        elif G.platform == "windows":
-            L = filename.split(".")
-            new_file = "{}_{}.{}".format("".join(L[:-1]), version, L[-1])
-        else:
-            new_file = ""
-        os.rename(os.path.join(G.web_driver_path, filename),
-                  os.path.join(G.web_driver_path, new_file))
-        G.DRIVER_PATH = os.path.join(G.web_driver_path, new_file)
-
-    @classmethod
-    def unzip_win(cls, filename):
-        """unzip zip file"""
-        with zipfile.ZipFile(filename) as f:
-            for names in f.namelist():
-                f.extract(names, G.web_driver_path)
-
-```
-
-#### driver fixture实现代码
-
-fixture为Pytest一大特性，十分方便，推荐使用。
-
-```python
-@pytest.fixture(scope='session', autouse=False)
-def drivers(request):
-    global driver
-    if driver is None:
-        Browser.set_browser()
-        if G.browser == "CHROME":
-            driver = webdriver.Chrome(executable_path=G.DRIVER_PATH)
-        else:
-            driver = webdriver.Ie(executable_path=G.DRIVER_PATH)
-        driver.maximize_window()
-    def fn():
-        driver.quit()
-
-    request.addfinalizer(fn)
-    return driver
-```
-
-#### UI相关测试用例编写例子
-
-在项目工程中/TestCase/UI/test_baidu.py中定义了两个简单的样本，后续可根据该例子来进行组合编写
-
-fixture使用样例
-
-```python
-@pytest.mark.z_user_org_right
-def test_loginPlatform(drivers, Init):
-    """ fixture可以直接当做参数传入测试代码，其中driver为上面driver fixture，传入之后driver fixture会先完成用例执行的前置操作，即设置驱动，设置好后，会将设置好的driver返回，在测试脚本中可以使用该driver完成后续操作，本例中的LoginPlatform为封装的Selenium类，后面再进行讲解
-    """
-    Init.info("开始登录平台")
-    A = LoginPlatform(driver=drivers)
-    A.login()
-    assert drivers.title == "HH"
-```
-
-
+UI相关测试用例使用，会使用G中的browser以及对应平台，版本检测G变量下的driver_path是否有selenium驱动，如果没有，会根据G变量中指定的driver_url或者IE_driver_url 请求查询，beautifulsoup对html解析，如果没有找到驱动，会抛出异常
 
 ## globalVars.py
 
@@ -416,7 +161,7 @@ G = GlobalVars()
 
 # log文件夹
 
-存放测试日志，日志文件格式为 测试函数_年月日-时分秒.log ,日志文件中日志打印格式为
+.gitnore忽略文件夹，需要自己在根目录创建，存放测试日志，日志文件格式为 测试函数_年月日-时分秒.log ,日志文件中日志打印格式为
 
 年-月-日 时-分-秒，毫秒 - [日志来源文件:当前文件行号]-日志等级- 日志消息
 
@@ -426,9 +171,7 @@ G = GlobalVars()
 
 # logFile模块
 
-日志配置核心模块，封装logger，便于全局使用，只需了解如何使用，无需了解实现
-
-使用方式为
+日志配置核心模块，封装logger，便于全局使用，只需了解如何使用，无需了解实现 使用方式为
 
 ```python
 from logFile.logger import Logger
@@ -445,23 +188,21 @@ log.critical()
 
 # Models模块
 
-数据库ORM文件存放地址，存放着平台当前所有表空间的数据库模型，使用SQLAlchemy完成。每个模块对应数据库模型文件名为模块名，例z_user_org_right对应z_user_org_right.py，需搭配后续utils/DBconnect/ORACLE.py使用
+数据库ORM文件存放地址,(根据使用数据库切换，当前使用ORACLE数据库演示)存放着平台当前所有表空间的数据库模型，使用SQLAlchemy完成。每个模块对应数据库模型文件名为模块名，例z_user_org_right对应z_user_org_right.py，需搭配后续utils/DBconnect/ORACLE.py使用,
 
 ```cmd
-sqlacodegen oracle+cx_oracle://username:password@IP:port/instancename --outfile filename.py
+sqlacodegen oracle+cx_oracle://username:password@IP:port/instancename --outfile filename.py 
 ```
 
 # report文件夹
 
 存放生成的测试截图，仅仅对UI用例生效，失败时保存浏览器截图至该文件夹，格式为年月日 时分秒_测试函数.png
 
-# result文件夹
-
-对测试结果进行整合以及Jinja2模板渲染，不详细讲述
-
 # resource文件夹
 
-包含三个文件夹，instant_client :存放 instant_client的路径，如果是windows需要将其中对应版本包解压将dll文件全部放到/venv/lib/site-packeges下
+包含三个文件夹，
+
+instant_client :存放 instant_client的路径，如果是windows需要将其中对应版本包解压将dll文件全部放到/venv/lib/site-packeges下
 
 Page_element: 元素定位yml文件，
 
@@ -469,17 +210,264 @@ Page_element: 元素定位yml文件，
 
 存放测试用例模块，其中分三个小模块，API,DataBase，UI，分别对应接口自动化，数据库，以及UI自动化，在对应文件夹中写对应的测试用例代码，每个文件夹中的conftest.py可以添加自定义fixture，仅对该文件夹生效，放置在工程总目录中conftest.py是全局fixture的所在地
 
-### tips
+测试用例样本(写的比较简单，可以根据业务逻辑更改为try,except,else,finally结构并自定义final fixture)
 
-三个文件夹中如果需要自定义fixture，可以在文件夹中添加conftest.py文件，在该文件中定义fixture,该文件夹内用例可直接使用
+###### 各个模块的fixture样本均在文件夹中conftest.py有定义
+
+##### API用例
+
+```python
+"""API用例用例代码样本
+    preInit为每个测试用例必须使用fixture,preInit  fixture自带log，可以使用该preInit.info preInit.debug preInit.error等打印消息
+    
+    
+    
+    
+    禁止使用print打印，print函数本工程已屏蔽，打印消息无法显示
+    
+    
+    
+    
+    其余fixture根据需求使用
+"""
+
+@pytest.mark.TestCase("[1]测试获取登录API验证是否正常")
+def test_Login_Api_Get_Token_GET(preInit, example_USER_fixture):
+    preInit.info("这是测试一个用例")
+    preInit.info("测试USER fixture")
+    sss = example_USER_fixture.Login_Api_Get_Token_GET()
+    preInit.info("本次测试状态码为 %s  " % sss[0])
+    preInit.info("本次测试返回值为 %s  " % sss[1])
+    preInit.info("本次测试响应头为 %s  " % sss[2])
+```
+
+##### DB用例
+
+```python
+@pytest.mark.TestCase("[1]测试数据库")
+def test_DataBase_TACTIVITYTEMPLATE(preInit, DataBaseSession):
+    data = {
+        "function": sys._getframe().f_code.co_name,
+        "filename": os.path.dirname(__file__)
+    }
+    dbsession = DataBaseSession
+    try:
+
+
+        queryset = dbsession.query(z_workflow.TActivityTemplate).filter(or_(z_workflow.TActivityTemplate.bz1 != None , z_workflow.TActivityTemplate.bz1 != None,
+                                                                         z_workflow.TActivityTemplate.bz3 != None , z_workflow.TActivityTemplate.bz4 != None ,
+                                                                         z_workflow.TActivityTemplate.isvalid != 1)
+                                                                         )
+
+        if queryset:
+            with open(os.path.join(os.path.dirname(__file__),
+                                   "DataBaseError_%s_%s.txt" % (
+                                           data["filename"].split("/")[-1], data["function"].split("_")[-1])),
+                      'a+') as f:
+                for i in queryset:
+                    if i.bz1 != None or i.bz2 !=None or i.bz3 != None or i.bz4 != None:
+                        error_data = "ERROR：    id 为%s 的数据 bz1-bz4 分别为bz1:%s  bz:%s  bz3:%s  bz4:%s\r" % (
+                            i.id, i.bz1, i.bz2, i.bz3, i.bz4)
+                        f.write(error_data)
+                        preInit.error(error_data)
+                    if i.isvalid != 1 :
+                        error_data = "ERROR:    id 为%s 的数据 isvalid 为%s\r" % (i.id, i.isvalid)
+                        preInit.error(error_data)
+                        f.write(error_data)
+                    if i.create_time == None or i.create_worker == None:
+                        error_data = "ERROR：    id 为%s 的数据 创建时间为%s /创建人为 %s \r" % (i.id, i.create_time, i.create_worker)
+                        preInit.error(error_data)
+                        f.write(error_data)
+        else:
+            preInit.info("未查询到本数据库有违规数据")
+    except Exception as e :
+        dbsession.rollback()
+```
+
+
+
+##### UI用例
+
+```python
+@pytest.mark.TestCase("[1]测试登录平台")
+def test_loginPlatform(preInit, drivers):
+    preInit.info("开始登录平台")
+    A = LoginPlatform(driver=drivers)
+    A.login()
+    assert drivers.title == "HH"
+    
+ """其中LoginPlatform为封装完成的登录对象，具体实现看如下"""
+```
+
+###### loginPlatform代码
+
+```python
+from config.globalVars import G
+from utils.UI.read_element import Element
+from .BasePage import WebPage
+from logFile.logger import Logger
+
+
+"""封装登录平台基类，后续可继承自该类再进行后续操作"""
+log = Logger(set_level="DEBUG")
+
+def read_config(configname):
+    return Element(configname)
+
+
+class LoginPlatform(object):
+
+    def __init__(self, driver):
+        self.driver = driver
+        self.ip = G.Server_IP # 根据G取ip，端口
+        self.port = G.Server_Port
+        self.basePage = WebPage(driver=self.driver) # 初始化WebPage类，
+        self.LoginURL = "http://" + self.ip + ":" + str(self.port) + "/z_user_org_right/Login/index"
+
+    def login(self):
+        log.info("读取登录页元素定位配置")
+        #####读取定位元素，文件位于/resource/pageelement/下的yml文件,
+        #####定位方法查看下方WebPage类
+        self.LoginConfig = read_config('z_user_org_rightLoginindex')
+        log.info("开始打开页面")
+        self.basePage.get_url(self.LoginURL)
+        log.info("输入登录名")
+        self.basePage.input_text(self.LoginConfig["userName"], G.SYSUsername)
+        log.info("输入密码")
+        self.basePage.input_text(self.LoginConfig["userPwd"], G.SYSPassword)
+        log.info("点击登录跳转")
+        self.basePage.is_click(self.LoginConfig["btnLogin"])
+
+
+class CreateWorkFlow(LoginPlatform):
+
+    def clickOpen(self):
+        log.info("读取首页菜单配置")
+        menu_config = read_config("z_web_containerHomeblueIndex")
+        log.info("点击新建流程")
+        self.basePage.is_click(menu_config["新建流程"])
+        log.info("切换iframe至当前新建流程")
+        self.basePage.switch(menu_config["切换iframe"])
+        self.basePage.is_click(menu_config["系统流程"])
+        self.basePage.is_click(menu_config["新建新闻审核"])
+
+```
+
+###### WebPage实现
+
+```python
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+from config.globalVars import G
+from utils.Others.TimeOperation import sleep
+from logFile.logger import Logger
+log = Logger("DEBUG")
+
+"""
+selenium基类
+本文件存放了selenium基类的封装方法，
+locator为(定位方式，该方式对应的标志)
+
+"""
+
+
+class WebPage(object):
+    """selenium基类"""
+
+    def __init__(self, driver):
+        self.driver = driver
+        self.timeout = 20
+        self.wait = WebDriverWait(self.driver, self.timeout)
+
+    def get_url(self, url):
+        """打开网址并验证"""
+        self.driver.maximize_window()
+        self.driver.set_page_load_timeout(60)
+        try:
+            self.driver.get(url)
+            self.driver.implicitly_wait(10)
+            log.info("打开网页：%s" % url)
+        except TimeoutException:
+            raise TimeoutException("打开%s超时请检查网络或网址服务器" % url)
+
+    @staticmethod
+    def element_locator(func, locator):
+        """元素定位器"""
+        name, value = locator
+        return func(G.LOCATE_MODE[name], value)
+
+    def find_element(self, locator):
+        """寻找单个元素"""
+        return WebPage.element_locator(lambda *args: self.wait.until(
+            EC.presence_of_element_located(args)), locator)
+
+    def find_elements(self, locator):
+        """查找多个相同的元素"""
+        return WebPage.element_locator(lambda *args: self.wait.until(
+            EC.presence_of_all_elements_located(args)), locator)
+
+    def elements_num(self, locator):
+        """获取相同元素的个数"""
+        number = len(self.find_elements(locator))
+        log.info("相同元素：{}".format((locator, number)))
+        return number
+
+    def switch(self,locator):
+        sleep(0.5)
+        ele = self.find_element(locator)
+        log.info("切换至定位元素为%s%s的ifraeme" % locator)
+        self.driver.switch_to_frame(ele)
+
+    def input_text(self, locator, txt):
+        """输入(输入前先清空)"""
+        sleep(0.5)
+        ele = self.find_element(locator)
+        ele.clear()
+        ele.send_keys(txt)
+        log.info("输入文本：{}".format(txt))
+
+    def is_click(self, locator):
+        """点击"""
+        self.find_element(locator).click()
+        sleep()
+        log.info("点击元素：{}".format(locator))
+
+    def element_text(self, locator):
+        """获取当前的text"""
+        _text = self.find_element(locator).text
+        log.info("获取文本：{}".format(_text))
+        return _text
+
+    def get_source(self):
+        """获取页面源代码"""
+        return self.driver.page_source
+
+    def refresh(self):
+        """刷新页面F5"""
+        self.driver.refresh()
+        self.driver.implicitly_wait(30)
+
+
+if __name__ == "__main__":
+    pass
+
+```
+
+###### 读取yml作为locator
+
+```
+搜索框: "id==kw"
+候选: "css==.bdsug-overflow"
+搜索候选: "css==#form div li"
+搜索按钮: "id==su"
+yml内容如上，通过读取工具之后，返回值为{"搜索候选":("css",#form div li)}
+再经过WebPage中的findelement方法进行定位，讲解稍微比较复杂，不做赘述
+```
+
+
 
 # utils模块
-
-存放各种工具的目录，是本工程代码量最大的文件夹，结构如图。
-
-![](/Users/wangbaofeng/Library/Application Support/typora-user-images/image-20201111144639673.png)
-
-
 
 ### HTTPRequest模块
 
@@ -614,7 +602,7 @@ def example_USER_fixture():
     
 """调用该fixture并请求"""
 
-@pytest.mark.z_user_org_right
+@pytest.mark.TestCase("[1]测试API")
 def test_Login_Api_Get_Token_GET(example_USER_fixture,Init):
     Init.info("这是测试一个用例")
     Init.info("测试USER fixture")
@@ -665,28 +653,7 @@ configs = {
 "password":"密码"
 }
 
-####测试用例无需传入参数，在Database对应文件夹中定义fixture，自动返回连接，
-database = DataBaseOperation(configs) # 实例初始化， 开始连接,
-查询  query方法:
-database.query(instance,filter,order) #查询 instance为必填参数，为需要查询的ORM对象
-##例 : 查询登录表空间下某个表的所有数据, database.query(instance) return值为对象列表，列表中的每个元素均为一条数据
-filter为过滤器，非必填，例: database.query(instance,filter=instance.id<5) 表示查询ID小于5的数据对象
-order为排序，非必填, database.query(instance,fileter=instance.id<5,order=instance.id) 表示查询ID小于5的数据对象并根据id排序
-增加 insert方法:
-从Models中导入对应的表ORM，创建该实例，并赋值，例:
-  a是当前登录账号下Models的一张表
-  a.id = 5
-  a.bz1 = 1
-  a.bz2= 3
 
-database.insert(a) #如果保存失败，session自动回滚
-删除 delete方法:
-  假设a是通过query查询出来的对象，
-  database.delete(a) #操作失败自动回滚，暂时只支持该方法，后续会支持根据条件删
-修改 update方法:
-  修改后的实例a
-  database.update(a) #操作失败自动回滚
-  
 
 ```
 
@@ -697,7 +664,7 @@ import sqlalchemy
 import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.testing import entities
 
 Base = declarative_base()
 
@@ -725,67 +692,13 @@ class DataBaseOperation(object):
             session_maker = sessionmaker(bind=self.db_engine)
             self.session = session_maker()
 
-    def query(self, table_name, filer=None, order=None):
-        """
-
-        :param table_name: 表名
-        :param filer: 过滤器
-        :param order: 排序
-        :return: 符合条件的数据实例
-        """
-        data = None
-        if filer:
-            if order:
-                data = self.session.query(table_name).filter_by(filer).order_by(order)
-            else:
-                data = self.session.query(table_name).filter_by(filer)
-        else:
-            if order:
-                data = self.session.query(table_name).order_by(order)
-            else:
-                data = self.session.query(table_name)
-
-        return data
-
-    def insert(self, instance):
-        """
-        :param instance:ORM实例，通过query查询得到
-        :return:
-        """
-        try:
-            self.session.add(instance)
-        except Exception as e :
-            # 如果插入失败，则回退
-            self.session.rollback()
-
-    def delete(self,instance):
-        """
-        :param instance: 删除的ORM实例，通过query查询得到
-        :return:
-        """
-        try:
-            self.session.delete(instance)
-        except Exception as e :
-            # 删除实例失败，oracle回退
-            self.session.rollback()
-
-    def update(self, instance):
-        """实例"""
-        if hasattr(instance, 'id'):
-            try:
-                self.query(table_name=instance.__class__, filer=instance.id).update(values=instance.__dict__)
-            except Exception as e:
-                self.session.rollback()
-
-    def __del__(self):
-        #自动commit
-        self.session.commit()
-        #实例销毁时关闭Oracle连接池
-        self.session.close()
-        self.db_engine.dispose()
+    """
+    原先使用的方法全部删除，改为使用session自带
+    """
 
 
 
+    
 ```
 
 与之前一样，定义了一个实例fixture，位置/TestCase/DataBase/z_workflow/conftest.py
@@ -800,84 +713,15 @@ def DataBaseSession():
     connection_data = G.data_base_config
     connect_data = {"Z_WORKFLOW":connection_data['Z_WORKFLOW']}
     DBsession = DataBaseOperation(connect_data)
-    yield DBsession
+    dbsession = DBsession.session
+    yield dbsession
+    dbsession.close_all()
+    
 ```
 
-使用该fixture的示例代码
+### UI模块
 
-```python
-"""数据库用例的用例编号命名规则为: test_DataBase_表名
-	使用该fixture后，数据库连接成功，可以直接使用它继续增删改查，参照上面ORacle.py的操作
-"""
-
-
-@pytest.mark.z_workflow
-def test_DataBase_TACTIVITYTEMPLATECopy1(DataBaseSession):
-    data = {
-        "function": sys._getframe().f_code.co_name,
-        "filename": os.path.dirname(__file__)
-    }
-
-    try:
-
-        oracle_instance = DataBaseSession
-        query_result = oracle_instance.query(z_workflow.TACTIVITYTEMPLATECopy1)
-        if query_result:
-            for i in query_result:
-                logFile.debug("确认%s表id为%s的数据的isvalid字段为1" % (i.__tablename__, i.id))
-                try:
-                    assert i.isvalid == 1
-                except Exception as e:
-                    error_data = "ERROR:    id 为%s 的数据 isvalid 为%s\r" % (i.id, i.isvalid)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                           data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
-                        f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的bz1-bz4字段为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.bz1 is None and i.bz2 is None and i.bz3 is None and i.bz4 is None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据 bz1-bz4 分别为bz1:%s  bz:%s  bz3:%s  bz4:%s\r" % (
-                        i.id, i.bz1, i.bz2, i.bz3, i.bz4)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
-                        f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的创建时间创建人字段不为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.create_time is not None and i.create_worker is not None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据 创建时间为%s /创建人为 %s \r" % (i.id, i.create_time, i.create_worker)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
-                        f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的最后修改时间最后修改人字段不为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.latest_modify_worker is not None and i.latest_modify_time is not None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据最后修改时间为%s /最后修改时间人为%s \r" % (
-                        i.id, i.latest_modify_time, i.latest_modify_worker)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
-                        f.write(error_data)
-    except Exception as e:
-        TestCaseException(e, data)
-
-    finally:
-        logFile.info("关闭数据库连接池")
-        if oracle_instance:
-            oracle_instance.__del__()
-```
+UI模块文件在TestCase模块中已经讲解过
 
 ### others模块
 
@@ -1030,166 +874,6 @@ urlpatterns = [
 
 模糊查询
 7 /TestReport/getresultByVague GET方式，查询参数为create_time(创建时间), marker(标记), ending_time(结束时间), nodeid(测试节点) 根据查询参数模糊匹配出的结果，ResponseBody为Json格式
-
-```
-
-# WEBPage模块
-
-存放UI工具的地方（后续会移步至UTILS中)
-
-### BasePage.py
-
-封装Selenium基类，以及定位元素方法
-
-```python
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
-from config.globalVars import G
-from utils.Others.TimeOperation import sleep
-from logFile.logger import Logger
-log = Logger("DEBUG")
-
-"""
-selenium基类
-本文件存放了selenium基类的封装方法
-"""
-
-
-class WebPage(object):
-    """selenium基类"""
-
-    def __init__(self, driver):
-        # self.driver = webdriver.Chrome()
-        self.driver = driver
-        self.timeout = 20
-        self.wait = WebDriverWait(self.driver, self.timeout)
-
-    def get_url(self, url):
-        """打开网址并验证"""
-        self.driver.maximize_window()
-        self.driver.set_page_load_timeout(60)
-        try:
-            self.driver.get(url)
-            self.driver.implicitly_wait(10)
-            log.info("打开网页：%s" % url)
-        except TimeoutException:
-            raise TimeoutException("打开%s超时请检查网络或网址服务器" % url)
-
-    @staticmethod
-    def element_locator(func, locator):
-        """元素定位器"""
-        name, value = locator
-        return func(G.LOCATE_MODE[name], value)
-
-    def find_element(self, locator):
-        """寻找单个元素"""
-        return WebPage.element_locator(lambda *args: self.wait.until(
-            EC.presence_of_element_located(args)), locator)
-
-    def find_elements(self, locator):
-        """查找多个相同的元素"""
-        return WebPage.element_locator(lambda *args: self.wait.until(
-            EC.presence_of_all_elements_located(args)), locator)
-
-    def elements_num(self, locator):
-        """获取相同元素的个数"""
-        number = len(self.find_elements(locator))
-        log.info("相同元素：{}".format((locator, number)))
-        return number
-
-    def switch(self,locator):
-        sleep(0.5)
-        ele = self.find_element(locator)
-        log.info("切换至定位元素为%s%s的ifraeme" % locator)
-        self.driver.switch_to_frame(ele)
-
-    def input_text(self, locator, txt):
-        """输入(输入前先清空)"""
-        sleep(0.5)
-        ele = self.find_element(locator)
-        ele.clear()
-        ele.send_keys(txt)
-        log.info("输入文本：{}".format(txt))
-
-    def is_click(self, locator):
-        """点击"""
-        self.find_element(locator).click()
-        sleep()
-        log.info("点击元素：{}".format(locator))
-
-    def element_text(self, locator):
-        """获取当前的text"""
-        _text = self.find_element(locator).text
-        log.info("获取文本：{}".format(_text))
-        return _text
-
-    def get_source(self):
-        """获取页面源代码"""
-        return self.driver.page_source
-
-    def refresh(self):
-        """刷新页面F5"""
-        self.driver.refresh()
-        self.driver.implicitly_wait(30)
-
-
-if __name__ == "__main__":
-    pass
-
-```
-
-### LoginPlatform.py
-
-封装两个简单的方法
-
-LoginPlatform类实现登录平台操作，CreateWorkFlow类实现打开创建测试流程操作，后续可自定义封装，减少用例代码
-
-```python
-from config.globalVars import G
-from utils.UI.read_element import Element
-from .BasePage import WebPage
-from logFile.logger import Logger
-"""封装登录平台基类，后续可继承自该类再进行后续操作"""
-log = Logger(set_level="DEBUG")
-
-def read_config(configname):
-    return Element(configname)
-
-
-class LoginPlatform(object):
-
-    def __init__(self, driver):
-        self.driver = driver
-        self.ip = G.Server_IP
-        self.port = G.Server_Port
-        self.basePage = WebPage(driver=self.driver)
-        self.LoginURL = "http://" + self.ip + ":" + str(self.port) + "/z_user_org_right/Login/index"
-
-    def login(self):
-        log.info("读取登录页元素定位配置")
-        self.LoginConfig = read_config('z_user_org_rightLoginindex')
-        log.info("开始打开页面")
-        self.basePage.get_url(self.LoginURL)
-        log.info("输入登录名")
-        self.basePage.input_text(self.LoginConfig["userName"], G.SYSUsername)
-        log.info("输入密码")
-        self.basePage.input_text(self.LoginConfig["userPwd"], G.SYSPassword)
-        log.info("点击登录跳转")
-        self.basePage.is_click(self.LoginConfig["btnLogin"])
-
-
-class CreateWorkFlow(LoginPlatform):
-
-    def clickOpen(self):
-        log.info("读取首页菜单配置")
-        menu_config = read_config("z_web_containerHomeblueIndex")
-        log.info("点击新建流程")
-        self.basePage.is_click(menu_config["新建流程"])
-        log.info("切换iframe至当前新建流程")
-        self.basePage.switch(menu_config["切换iframe"])
-        self.basePage.is_click(menu_config["系统流程"])
-        self.basePage.is_click(menu_config["新建新闻审核"])
 
 ```
 

@@ -1,77 +1,65 @@
 import os
 import sys
 import pytest
+from sqlalchemy import or_
 
 from Models import z_workflow
 
-import logFile
+"""API用例用例代码样本
+    preInit为每个测试用例必须使用fixture,preInit  fixture自带log，可以使用该preInit.info preInit.debug preInit.error等打印消息
 
 
-@pytest.mark.z_workflow
-def test_DataBase_TACTIVITYTEMPLATECopy1(DataBaseSession):
+
+
+    禁止使用print打印，print函数本工程已屏蔽，打印消息无法显示
+
+
+
+
+    其余fixture根据需求使用
+"""
+
+
+
+@pytest.mark.TestCase("[1]测试数据库")
+def test_DataBase_TACTIVITYTEMPLATE(preInit, DataBaseSession):
     data = {
         "function": sys._getframe().f_code.co_name,
         "filename": os.path.dirname(__file__)
     }
-
+    dbsession = DataBaseSession
     try:
 
-        oracle_instance = DataBaseSession
-        query_result = oracle_instance.query(z_workflow.TACTIVITYTEMPLATECopy1)
-        if query_result:
-            for i in query_result:
-                logFile.debug("确认%s表id为%s的数据的isvalid字段为1" % (i.__tablename__, i.id))
-                try:
-                    assert i.isvalid == 1
-                except Exception as e:
-                    error_data = "ERROR:    id 为%s 的数据 isvalid 为%s\r" % (i.id, i.isvalid)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
+
+        queryset = dbsession.query(z_workflow.TActivityTemplate).filter(or_(z_workflow.TActivityTemplate.bz1 != None , z_workflow.TActivityTemplate.bz1 != None,
+                                                                         z_workflow.TActivityTemplate.bz3 != None , z_workflow.TActivityTemplate.bz4 != None ,
+                                                                         z_workflow.TActivityTemplate.isvalid != 1)
+                                                                         )
+
+        if queryset:
+            with open(os.path.join(os.path.dirname(__file__),
+                                   "DataBaseError_%s_%s.txt" % (
                                            data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
+                      'a+') as f:
+                for i in queryset:
+                    if i.bz1 != None or i.bz2 !=None or i.bz3 != None or i.bz4 != None:
+                        error_data = "ERROR：    id 为%s 的数据 bz1-bz4 分别为bz1:%s  bz:%s  bz3:%s  bz4:%s\r" % (
+                            i.id, i.bz1, i.bz2, i.bz3, i.bz4)
                         f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的bz1-bz4字段为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.bz1 is None and i.bz2 is None and i.bz3 is None and i.bz4 is None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据 bz1-bz4 分别为bz1:%s  bz:%s  bz3:%s  bz4:%s\r" % (
-                        i.id, i.bz1, i.bz2, i.bz3, i.bz4)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
+                        preInit.error(error_data)
+                    if i.isvalid != 1 :
+                        error_data = "ERROR:    id 为%s 的数据 isvalid 为%s\r" % (i.id, i.isvalid)
+                        preInit.error(error_data)
                         f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的创建时间创建人字段不为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.create_time is not None and i.create_worker is not None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据 创建时间为%s /创建人为 %s \r" % (i.id, i.create_time, i.create_worker)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
+                    if i.create_time == None or i.create_worker == None:
+                        error_data = "ERROR：    id 为%s 的数据 创建时间为%s /创建人为 %s \r" % (i.id, i.create_time, i.create_worker)
+                        preInit.error(error_data)
                         f.write(error_data)
-                logFile.debug("确认%s表id为%s的数据的最后修改时间最后修改人字段不为空" % (i.__tablename__, i.id))
-                try:
-                    assert i.latest_modify_worker is not None and i.latest_modify_time is not None
-                except Exception as e:
-                    error_data = "ERROR：    id 为%s 的数据最后修改时间为%s /最后修改时间人为%s \r" % (
-                        i.id, i.latest_modify_time, i.latest_modify_worker)
-                    logFile.error(error_data)
-                    with open(os.path.join(os.path.dirname(__file__),
-                                           "DataBaseError_%s_%s.txt" % (
-                                                   data["filename"].split("/")[-1], data["function"].split("_")[-1])),
-                              'a+') as f:
-                        f.write(error_data)
-    except Exception as e:
-        pass
-    finally:
-        logFile.info("关闭数据库连接池")
-        if oracle_instance:
-            oracle_instance.__del__()
+        else:
+            preInit.info("未查询到本数据库有违规数据")
+    except Exception as e :
+        dbsession.rollback()
 
 
-            oracle_instance.__del__()
+
+

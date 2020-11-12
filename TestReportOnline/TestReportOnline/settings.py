@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'TestReportOnline.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
+        'NAME': 'test',
+        'USER': 'TESTCASE',
+        'PASSWORD': 'zdww1402!',
+        'HOST': '114.215.200.79',
         'PORT': '1521'
     }
 }

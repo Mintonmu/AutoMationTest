@@ -65,6 +65,8 @@ class RequestBase(object):
             return req.status_code, req.text, req.headers
 
     def keep_login_alive(self):
+
+        # 需要登录请求的API的需要先调用本方法，后续请求参数中加入cookies = self.cookies
         request_data = {"username" :"Admin",
                         "password": "zjugis1402!"}
 

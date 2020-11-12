@@ -1,0 +1,88 @@
+当前节点: TestCase/UI/test_baidu.py::test_loginPlatform 
+TestCaseName: test_loginPlatform   Result: failed   Duration: 21.019038025S 
+--------------------Captured stdout setup--------------------
+2020-11-11 16:39:44,951 - [browser.py-_jb_pytest_runner:27]- WARNING - 您的电脑为 mac 平台, 浏览器为 CHROME 版本号 86.0.4240.193 
+2020-11-11 16:39:45,674 - [browser.py-_jb_pytest_runner:46]- WARNING - 未查询到本地驱动
+开始下载!
+Archive:  chromedriver_mac64.zip
+  inflating: chromedriver            
+2020-11-11 16:39:48,641004 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:21]- INFO - TestCase: TestCase/UI/test_baidu.py::test_loginPlatform Start, Using Fixtures: ['drivers', 'log', 'Init', 'request'] 
+2020-11-11 16:39:48,641141 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:22]- INFO - UsingMarker: [Mark(name='z_user_org_right', args=(), kwargs={})] 
+
+2020-11-11 16:39:48,641184 - [/Users/wangbaofeng/PycharmProjects/TEST_AUTOMATION/logFile/logger.py-cmdOUT:23]- INFO - Start Setting UP 
+
+
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured log setup--------------------
+WARNING  _jb_pytest_runner:browser.py:27 您的电脑为 mac 平台, 浏览器为 CHROME 版本号 86.0.4240.193 
+WARNING  _jb_pytest_runner:browser.py:46 未查询到本地驱动
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured stdout call--------------------
+2020-11-11 16:39:48,642 - [test_baidu.py-_jb_pytest_runner:9]- INFO - 开始登录平台
+2020-11-11 16:39:48,642 - [LoginPlatform.py-_jb_pytest_runner:22]- INFO - 读取登录页元素定位配置
+2020-11-11 16:39:48,645 - [LoginPlatform.py-_jb_pytest_runner:24]- INFO - 开始打开页面
+2020-11-11 16:39:49,462 - [BasePage.py-_jb_pytest_runner:31]- INFO - 打开网页：http://ip:port/z_user_org_right/Login/index
+2020-11-11 16:39:49,462 - [LoginPlatform.py-_jb_pytest_runner:26]- INFO - 输入登录名
+2020-11-11 16:39:50,102 - [BasePage.py-_jb_pytest_runner:69]- INFO - 输入文本：
+2020-11-11 16:39:50,102 - [LoginPlatform.py-_jb_pytest_runner:28]- INFO - 输入密码
+2020-11-11 16:39:50,678 - [BasePage.py-_jb_pytest_runner:69]- INFO - 输入文本：
+2020-11-11 16:39:50,678 - [LoginPlatform.py-_jb_pytest_runner:30]- INFO - 点击登录跳转
+2020-11-11 16:39:51,717 - [BasePage.py-_jb_pytest_runner:75]- INFO - 点击元素：('name', 'btnLogin')
+
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError
+--------------------Captured log call--------------------
+INFO     _jb_pytest_runner:test_baidu.py:9 开始登录平台
+INFO     _jb_pytest_runner:LoginPlatform.py:22 读取登录页元素定位配置
+INFO     _jb_pytest_runner:LoginPlatform.py:24 开始打开页面
+INFO     _jb_pytest_runner:BasePage.py:31 打开网页：http://114.215.200.79:82/z_user_org_right/Login/index
+INFO     _jb_pytest_runner:LoginPlatform.py:26 输入登录名
+INFO     _jb_pytest_runner:BasePage.py:69 输入文本：wangbf
+INFO     _jb_pytest_runner:LoginPlatform.py:28 输入密码
+INFO     _jb_pytest_runner:BasePage.py:69 输入文本：zjugis1402!
+INFO     _jb_pytest_runner:LoginPlatform.py:30 点击登录跳转
+INFO     _jb_pytest_runner:BasePage.py:75 点击元素：('name', 'btnLogin')
+drivers = <selenium.webdriver.chrome.webdriver.WebDriver (session="bffea97ac429a01c30340b2bc4936c60")>
+Init = <logFile.logger.Logger object at 0x10467d040>
+
+    @pytest.mark.z_user_org_right
+    def test_loginPlatform(drivers, Init):
+        Init.info("开始登录平台")
+        A = LoginPlatform(driver=drivers)
+        A.login()
+>       assert drivers.title == "HH"
+E       AssertionError: assert '万维自然资源规划一体化平台' == 'HH'
+
+test_baidu.py:12: AssertionError

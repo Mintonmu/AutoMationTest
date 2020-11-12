@@ -1,0 +1,4 @@
+btnLogin: name==btnLogin
+isRememberPwd: name==isRememberPwd
+userName: name==userName
+userPwd: name==userPwd

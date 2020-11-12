@@ -1,0 +1,33 @@
+# This is an auto-generated Django model module.
+# You'll have to do the following manually to clean this up:
+#   * Rearrange models' order
+#   * Make sure each model has one field with primary_key=True
+#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
+#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+# Feel free to rename the models, but don't rename db_table values or field names.
+from __future__ import unicode_literals
+
+from django.db import models
+
+
+class Testcaseresult(models.Model):
+
+    id = models.BigIntegerField(primary_key=True)
+    create_worker = models.TextField(blank=True, null=True)  # This field type is a guess.
+    create_time = models.TextField(blank=True, null=True)  # This field type is a guess.
+    ending_worker = models.TextField(blank=True, null=True)  # This field type is a guess.
+    ending_time = models.TextField(blank=True, null=True)  # This field type is a guess.
+    logs = models.TextField(blank=True, null=True)
+    result = models.TextField( blank=True, null=True)
+    case_name = models.TextField( blank=True, null=True)
+    case_number = models.TextField( blank=True, null=True)
+    marker = models.TextField(blank=True, null=True)
+    nodeid = models.TextField( blank=True, null=True)
+    imgurl = models.TextField( blank=True, null=True)
+    taskname = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'testcaseresult'
+
+    
